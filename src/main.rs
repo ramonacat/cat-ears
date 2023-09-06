@@ -11,7 +11,6 @@ use bsp::{
     hal::{prelude::*, Timer},
 };
 use defmt_rtt as _;
-use embedded_hal::digital::v2::OutputPin;
 
 // Provide an alias for our BSP so we can switch targets quickly.
 // Uncomment the BSP you included in Cargo.toml, the rest of the code does not need to change.
@@ -26,7 +25,7 @@ use bsp::hal::{
 };
 use ws2812_pio::Ws2812;
 
-use smart_leds_trait::{SmartLedsWrite, RGB8};
+use smart_leds_trait::RGB8;
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -40,7 +39,7 @@ fn main() -> ! {
     let mut watchdog = Watchdog::new(peripherals.WATCHDOG);
     let sio = Sio::new(peripherals.SIO);
 
-    let mut clocks = init_clocks_and_plls(
+    let clocks = init_clocks_and_plls(
         rp_pico::XOSC_CRYSTAL_FREQ,
         peripherals.XOSC,
         peripherals.CLOCKS,
@@ -62,7 +61,7 @@ fn main() -> ! {
 
     let (mut pio, sm0, _, _, _) = peripherals.PIO0.split(&mut peripherals.RESETS);
     let mut ws = Ws2812::new(
-        pins.gpio4.into_mode(),
+        pins.gpio4.into_function(),
         &mut pio,
         sm0,
         clocks.peripheral_clock.freq(),
@@ -72,15 +71,15 @@ fn main() -> ! {
     let core = pac::CorePeripherals::take().unwrap();
     let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().raw());
 
-    const color: RGB8 = RGB8::new(0xff, 0x18, 0x85);
-    let mut data: [RGB8; 70] = [color; 70];
+    const COLOR: RGB8 = RGB8::new(0xff, 0x18, 0x85);
+    let mut data: [RGB8; 70] = [COLOR; 70];
     let mut flip = false;
 
     loop {
         use smart_leds::{SmartLedsWrite, RGB8};
 
         let range = 0..35;
-        for mut i in  range {
+        for mut i in range {
             for item in data.iter_mut() {
                 *item = RGB8::default();
             }
@@ -89,8 +88,8 @@ fn main() -> ! {
                 i = 35 - i - 1;
             }
 
-            data[i] = color;
-            data[70 - i - 1] = color;
+            data[i] = COLOR;
+            data[70 - i - 1] = COLOR;
 
             ws.write(data.iter().copied()).unwrap();
             delay.delay_ms(100);
