@@ -1,0 +1,25 @@
+[package]
+edition = "2021"
+name = "cat-ears"
+version = "0.1.0"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+embedded-hal = { version = "0.2.5", features = [] }
+defmt = "0.3"
+defmt-rtt = "0.4"
+rp-pico = "0.8"
+ws2812-pio = "0.7.0"
+smart-leds-trait = "0.2.1"
+smart-leds = "0.3.0"
+
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[target.thumbv6m-none-eabi]
+runner = "elf2uf2-rs -d"
